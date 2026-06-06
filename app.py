@@ -47,9 +47,10 @@ Scopus
 """)
 
 st.sidebar.markdown("""
-### Autor
+### Grupo 6:
 
-Ricardo Céspedes
+Ricardo Cesspedes
+Luis Beltran
 """)
 
 # ==================================================
