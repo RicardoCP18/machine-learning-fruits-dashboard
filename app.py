@@ -49,7 +49,7 @@ Scopus
 st.sidebar.markdown("""
 ### Grupo 6:
 
-Ricardo Cesspedes
+Ricardo Cespedes
 
 Luis Beltran
 """)
