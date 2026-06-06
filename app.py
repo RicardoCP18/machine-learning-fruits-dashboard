@@ -52,19 +52,6 @@ st.sidebar.markdown("""
 Ricardo Céspedes
 """)
 
-# Filtro
-opciones_anio = ["Todos"] + sorted(df["Year"].dropna().unique().tolist())
-
-anio_seleccionado = st.sidebar.selectbox(
-    "Filtrar Dataset por Año",
-    opciones_anio
-)
-
-if anio_seleccionado == "Todos":
-    df_filtrado = df.copy()
-else:
-    df_filtrado = df[df["Year"] == anio_seleccionado]
-
 # ==================================================
 # ENCABEZADO
 # ==================================================
@@ -88,6 +75,23 @@ st.subheader("Pregunta de Investigación")
 st.info("""
 ¿Cómo se aplica el Machine Learning en la clasificación de frutas utilizando información nutricional para apoyar la toma de decisiones alimentarias saludables?
 """)
+
+# ==================================================
+# TABS
+# ==================================================
+
+# Filtro
+opciones_anio = ["Todos"] + sorted(df["Year"].dropna().unique().tolist())
+
+anio_seleccionado = st.sidebar.selectbox(
+    "Filtrar Dataset por Año (Ver pestaña Resumen o Dataset)",
+    opciones_anio
+)
+
+if anio_seleccionado == "Todos":
+    df_filtrado = df.copy()
+else:
+    df_filtrado = df[df["Year"] == anio_seleccionado]
 
 # ==================================================
 # TABS
@@ -260,28 +264,29 @@ with tab2:
     # GRÁFICO 4
     # ----------------------------------------------
 
-    st.subheader("📚 Revistas con Más Publicaciones")
+st.subheader("📚 Revistas con Más Publicaciones")
 
-    st.info("""
-    Identifica las fuentes científicas que publican más investigaciones sobre la temática.
-    """)
+st.info("""
+Identifica las fuentes científicas que publican más investigaciones sobre la temática.
+""")
 
-    top_revistas = (
-        df["Source title"]
-        .value_counts()
-        .head(10)
-    )
+top_revistas = (
+    df["Source title"]
+    .value_counts()
+    .head(10)
+)
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(12,6))
 
-    top_revistas.plot(
-        kind="bar",
-        ax=ax
-    )
+top_revistas.sort_values().plot(
+    kind="barh",
+    ax=ax
+)
 
-    plt.xticks(rotation=45)
+ax.set_xlabel("Cantidad de publicaciones")
+ax.set_ylabel("Revista")
 
-    st.pyplot(fig)
+st.pyplot(fig)
 
     # ----------------------------------------------
     # GRÁFICO 5
