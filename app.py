@@ -106,6 +106,7 @@ else:
     df_filtrado = df[df["Year"] == anio_seleccionado]
 
 with col2:
+    st.markdown("<br>", unsafe_allow_html=True)
     st.info(
         f"Mostrando {len(df_filtrado)} registros para: {anio_seleccionado}"
     )
