@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS
 from collections import Counter
 
-# ---------------------------------------------------
-# CONFIGURACIÓN DE LA PÁGINA
-# ---------------------------------------------------
+# ==================================================
+# CONFIGURACIÓN DE PÁGINA
+# ==================================================
 
 st.set_page_config(
     page_title="Dashboard Bibliométrico",
@@ -14,9 +14,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---------------------------------------------------
+# ==================================================
 # CARGA DE DATOS
-# ---------------------------------------------------
+# ==================================================
 
 @st.cache_data
 def cargar_datos():
@@ -25,23 +25,63 @@ def cargar_datos():
 
 df = cargar_datos()
 
-# ---------------------------------------------------
+# ==================================================
+# SIDEBAR
+# ==================================================
+
+st.sidebar.title("🍎 Dashboard Bibliométrico")
+
+st.sidebar.markdown("""
+### Keywords
+
+- Machine Learning
+- Fruits
+- Classification
+- Nutrition
+""")
+
+st.sidebar.markdown("""
+### Fuente de Datos
+
+Scopus
+""")
+
+st.sidebar.markdown("""
+### Autor
+
+Ricardo Céspedes
+""")
+
+# Filtro
+opciones_anio = ["Todos"] + sorted(df["Year"].dropna().unique().tolist())
+
+anio_seleccionado = st.sidebar.selectbox(
+    "Filtrar Dataset por Año",
+    opciones_anio
+)
+
+if anio_seleccionado == "Todos":
+    df_filtrado = df.copy()
+else:
+    df_filtrado = df[df["Year"] == anio_seleccionado]
+
+# ==================================================
 # ENCABEZADO
-# ---------------------------------------------------
+# ==================================================
 
 st.title("🍎 Dashboard Bibliométrico sobre Machine Learning y Fruits")
 
 st.markdown("""
 Bienvenido al dashboard de análisis bibliométrico.
 
-Esta aplicación explora publicaciones científicas obtenidas desde Scopus relacionadas con Machine Learning, clasificación de frutas y nutrición.
+Esta aplicación permite explorar publicaciones científicas obtenidas desde Scopus relacionadas con Machine Learning, clasificación de frutas y nutrición.
 
-Los gráficos permiten identificar tendencias de investigación, autores destacados y conceptos frecuentes dentro de la literatura científica.
+A través de visualizaciones interactivas se pueden identificar tendencias de investigación, autores destacados, artículos influyentes y conceptos frecuentes presentes en la literatura científica.
 """)
 
-# ---------------------------------------------------
+# ==================================================
 # PREGUNTA DE INVESTIGACIÓN
-# ---------------------------------------------------
+# ==================================================
 
 st.subheader("Pregunta de Investigación")
 
@@ -49,232 +89,275 @@ st.info("""
 ¿Cómo se aplica el Machine Learning en la clasificación de frutas utilizando información nutricional para apoyar la toma de decisiones alimentarias saludables?
 """)
 
-# ---------------------------------------------------
-# MÉTRICAS
-# ---------------------------------------------------
+# ==================================================
+# TABS
+# ==================================================
 
-st.subheader("Resumen General")
-
-autores_unicos = set()
-
-for fila in df["Authors"].dropna():
-    for autor in fila.split(";"):
-        autores_unicos.add(autor.strip())
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric(
-    "Artículos",
-    len(df)
+tab1, tab2, tab3 = st.tabs(
+    ["📊 Resumen", "📈 Dashboard", "📄 Dataset"]
 )
 
-col2.metric(
-    "Autores únicos",
-    len(autores_unicos)
-)
+# ==================================================
+# TAB 1 - RESUMEN
+# ==================================================
 
-col3.metric(
-    "Años analizados",
-    df["Year"].nunique()
-)
+with tab1:
 
-col4.metric(
-    "Total citas",
-    int(df["Cited by"].fillna(0).sum())
-)
+    st.subheader("Resumen General")
 
-# ---------------------------------------------------
-# DATASET
-# ---------------------------------------------------
+    autores_unicos = set()
 
-st.subheader("Vista Previa del Dataset")
+    for fila in df_filtrado["Authors"].dropna():
+        for autor in fila.split(";"):
+            autores_unicos.add(autor.strip())
 
-st.dataframe(df)
+    col1, col2, col3, col4 = st.columns(4)
 
-# ---------------------------------------------------
-# PUBLICACIONES POR AÑO
-# ---------------------------------------------------
-
-st.subheader("📈 Publicaciones por Año")
-
-st.write("""
-Este gráfico muestra la evolución de las publicaciones científicas relacionadas con la temática investigada.
-""")
-
-publicaciones = df["Year"].value_counts().sort_index()
-
-fig, ax = plt.subplots(figsize=(8, 4))
-
-ax.bar(
-    publicaciones.index,
-    publicaciones.values
-)
-
-ax.set_xlabel("Año")
-ax.set_ylabel("Cantidad de publicaciones")
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# TOP 10 ARTÍCULOS MÁS CITADOS
-# ---------------------------------------------------
-
-st.subheader("🏆 Top 10 Artículos Más Citados")
-
-st.write("""
-Permite identificar los trabajos con mayor impacto académico.
-""")
-
-top_citados = (
-    df.sort_values(
-        by="Cited by",
-        ascending=False
-    )
-    .head(10)
-    .copy()
-)
-
-top_citados["Titulo Corto"] = (
-    top_citados["Title"]
-    .str[:50]
-    + "..."
-)
-
-fig, ax = plt.subplots(figsize=(12, 6))
-
-ax.barh(
-    top_citados["Titulo Corto"],
-    top_citados["Cited by"]
-)
-
-ax.set_xlabel("Número de citas")
-
-plt.subplots_adjust(left=0.35)
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# AUTORES MÁS PRODUCTIVOS
-# ---------------------------------------------------
-
-st.subheader("👨‍🔬 Autores con Más Publicaciones")
-
-st.write("""
-Muestra los investigadores con mayor participación en el conjunto de artículos analizados.
-""")
-
-autores = []
-
-for fila in df["Authors"].dropna():
-    autores.extend(
-        [a.strip() for a in fila.split(";")]
+    col1.metric(
+        "Artículos",
+        len(df_filtrado)
     )
 
-contador = Counter(autores)
+    col2.metric(
+        "Autores únicos",
+        len(autores_unicos)
+    )
 
-top_autores = contador.most_common(10)
+    col3.metric(
+        "Años analizados",
+        df_filtrado["Year"].nunique()
+    )
 
-autores_df = pd.DataFrame(
-    top_autores,
-    columns=["Autor", "Publicaciones"]
+    col4.metric(
+        "Total citas",
+        int(df_filtrado["Cited by"].fillna(0).sum())
+    )
+
+    st.subheader("Conclusiones")
+
+    st.success("""
+    La producción científica relacionada con Machine Learning aplicado a frutas y nutrición muestra una tendencia de crecimiento.
+
+    Los artículos más citados evidencian el interés de la comunidad científica por técnicas de clasificación y análisis de datos.
+
+    Los conceptos frecuentes encontrados en los abstracts reflejan una estrecha relación entre aprendizaje automático, clasificación y nutrición.
+    """)
+
+# ==================================================
+# TAB 2 - DASHBOARD
+# ==================================================
+
+with tab2:
+
+    # ----------------------------------------------
+    # GRÁFICO 1
+    # ----------------------------------------------
+
+    st.subheader("📈 Publicaciones por Año")
+
+    st.info("""
+    Este gráfico permite observar la evolución temporal de las publicaciones científicas relacionadas con la temática estudiada.
+    """)
+
+    publicaciones = df["Year"].value_counts().sort_index()
+
+    fig, ax = plt.subplots(figsize=(8, 4))
+
+    ax.bar(
+        publicaciones.index,
+        publicaciones.values
+    )
+
+    ax.set_xlabel("Año")
+    ax.set_ylabel("Cantidad de publicaciones")
+
+    st.pyplot(fig)
+
+    # ----------------------------------------------
+    # GRÁFICO 2
+    # ----------------------------------------------
+
+    st.subheader("🏆 Top 10 Artículos Más Citados")
+
+    st.info("""
+    Permite identificar los artículos con mayor impacto académico dentro del conjunto analizado.
+    """)
+
+    top_citados = (
+        df.sort_values(
+            by="Cited by",
+            ascending=False
+        )
+        .head(10)
+        .copy()
+    )
+
+    top_citados["Titulo Corto"] = (
+        top_citados["Title"]
+        .str[:50]
+        + "..."
+    )
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    ax.barh(
+        top_citados["Titulo Corto"],
+        top_citados["Cited by"]
+    )
+
+    ax.set_xlabel("Número de citas")
+
+    plt.subplots_adjust(left=0.35)
+
+    st.pyplot(fig)
+
+    st.subheader("Detalle de los Artículos Más Citados")
+
+    st.dataframe(
+        top_citados[
+            ["Title", "Authors", "Year", "Cited by"]
+        ]
+    )
+
+    # ----------------------------------------------
+    # GRÁFICO 3
+    # ----------------------------------------------
+
+    st.subheader("👨‍🔬 Autores con Más Publicaciones")
+
+    st.info("""
+    Muestra los investigadores con mayor participación dentro del conjunto de publicaciones analizadas.
+    """)
+
+    autores = []
+
+    for fila in df["Authors"].dropna():
+        autores.extend(
+            [a.strip() for a in fila.split(";")]
+        )
+
+    contador = Counter(autores)
+
+    top_autores = contador.most_common(10)
+
+    autores_df = pd.DataFrame(
+        top_autores,
+        columns=["Autor", "Publicaciones"]
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    ax.bar(
+        autores_df["Autor"],
+        autores_df["Publicaciones"]
+    )
+
+    plt.xticks(rotation=45)
+
+    st.pyplot(fig)
+
+    # ----------------------------------------------
+    # GRÁFICO 4
+    # ----------------------------------------------
+
+    st.subheader("📚 Revistas con Más Publicaciones")
+
+    st.info("""
+    Identifica las fuentes científicas que publican más investigaciones sobre la temática.
+    """)
+
+    top_revistas = (
+        df["Source title"]
+        .value_counts()
+        .head(10)
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    top_revistas.plot(
+        kind="bar",
+        ax=ax
+    )
+
+    plt.xticks(rotation=45)
+
+    st.pyplot(fig)
+
+    # ----------------------------------------------
+    # GRÁFICO 5
+    # ----------------------------------------------
+
+    st.subheader("📄 Tipos de Documentos")
+
+    st.info("""
+    Permite conocer la distribución de artículos, revisiones y otros tipos de documentos científicos.
+    """)
+
+    tipos = df["Document Type"].value_counts()
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    ax.pie(
+        tipos,
+        labels=tipos.index,
+        autopct="%1.1f%%"
+    )
+
+    st.pyplot(fig)
+
+    # ----------------------------------------------
+    # GRÁFICO 6
+    # ----------------------------------------------
+
+    st.subheader("☁️ Palabras Frecuentes en Abstracts")
+
+    st.info("""
+    La nube de palabras permite identificar los conceptos más recurrentes presentes en los resúmenes de los artículos.
+    """)
+
+    texto = " ".join(
+        df["Abstract"]
+        .fillna("")
+        .astype(str)
+    )
+
+    stopwords = set(STOPWORDS)
+
+    wordcloud = WordCloud(
+        width=1200,
+        height=600,
+        background_color="white",
+        stopwords=stopwords
+    ).generate(texto)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    ax.imshow(wordcloud)
+
+    ax.axis("off")
+
+    st.pyplot(fig)
+
+# ==================================================
+# TAB 3 - DATASET
+# ==================================================
+
+with tab3:
+
+    st.subheader("Dataset Filtrado")
+
+    st.write(
+        f"Cantidad de registros mostrados: {len(df_filtrado)}"
+    )
+
+    st.dataframe(df_filtrado)
+
+# ==================================================
+# PIE DE PÁGINA
+# ==================================================
+
+st.markdown("---")
+
+st.caption(
+    "Proyecto académico desarrollado con Streamlit utilizando publicaciones científicas extraídas desde Scopus."
 )
-
-fig, ax = plt.subplots(figsize=(10, 5))
-
-ax.bar(
-    autores_df["Autor"],
-    autores_df["Publicaciones"]
-)
-
-plt.xticks(rotation=45)
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# REVISTAS CON MÁS PUBLICACIONES
-# ---------------------------------------------------
-
-st.subheader("📚 Revistas con Más Publicaciones")
-
-st.write("""
-Muestra las fuentes científicas con mayor cantidad de publicaciones sobre el tema.
-""")
-
-top_revistas = (
-    df["Source title"]
-    .value_counts()
-    .head(10)
-)
-
-fig, ax = plt.subplots(figsize=(10, 5))
-
-top_revistas.plot(
-    kind="bar",
-    ax=ax
-)
-
-plt.xticks(rotation=45)
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# TIPOS DE DOCUMENTOS
-# ---------------------------------------------------
-
-st.subheader("📄 Tipos de Documentos")
-
-tipos = df["Document Type"].value_counts()
-
-fig, ax = plt.subplots(figsize=(6, 6))
-
-ax.pie(
-    tipos,
-    labels=tipos.index,
-    autopct="%1.1f%%"
-)
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# NUBE DE PALABRAS
-# ---------------------------------------------------
-
-st.subheader("☁️ Palabras Frecuentes en Abstracts")
-
-st.write("""
-La nube de palabras permite identificar los conceptos más recurrentes presentes en los resúmenes de los artículos.
-""")
-
-texto = " ".join(
-    df["Abstract"]
-    .fillna("")
-    .astype(str)
-)
-
-wordcloud = WordCloud(
-    width=1200,
-    height=600,
-    background_color="white"
-).generate(texto)
-
-fig, ax = plt.subplots(figsize=(12, 6))
-
-ax.imshow(wordcloud)
-
-ax.axis("off")
-
-st.pyplot(fig)
-
-# ---------------------------------------------------
-# CONCLUSIONES
-# ---------------------------------------------------
-
-st.subheader("Conclusiones")
-
-st.success("""
-La literatura científica relacionada con Machine Learning, clasificación de frutas y nutrición presenta una tendencia creciente.
-
-Los artículos más citados evidencian el interés académico en técnicas de clasificación y análisis de datos aplicadas a la alimentación.
-
-Los conceptos más frecuentes identificados en los abstracts muestran una fuerte relación entre aprendizaje automático, clasificación y nutrición.
-""")
