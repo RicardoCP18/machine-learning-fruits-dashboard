@@ -294,14 +294,17 @@ with tab2:
         .head(10)
     )
 
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-    top_revistas.plot(
-        kind="bar",
-        ax=ax
+    top_revistas.sort_values().plot(
+    kind="barh",
+    ax=ax
     )
 
-    plt.xticks(rotation=45)
+    ax.set_xlabel("Cantidad de publicaciones")
+    ax.set_ylabel("Revista")
+    
+    plt.tight_layout()
 
     st.pyplot(fig)
 
