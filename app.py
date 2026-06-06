@@ -287,7 +287,6 @@ ax.set_xlabel("Cantidad de publicaciones")
 ax.set_ylabel("Revista")
 
 st.pyplot(fig)
-
     # ----------------------------------------------
     # GRÁFICO 5
     # ----------------------------------------------
