@@ -264,29 +264,29 @@ with tab2:
     # GRÁFICO 4
     # ----------------------------------------------
 
-st.subheader("📚 Revistas con Más Publicaciones")
+    st.subheader("📚 Revistas con Más Publicaciones")
 
-st.info("""
-Identifica las fuentes científicas que publican más investigaciones sobre la temática.
-""")
+    st.info("""
+    Identifica las fuentes científicas que publican más investigaciones sobre la temática.
+    """)
 
-top_revistas = (
-    df["Source title"]
-    .value_counts()
-    .head(10)
-)
+    top_revistas = (
+        df["Source title"]
+        .value_counts()
+        .head(10)
+    )
 
-fig, ax = plt.subplots(figsize=(12,6))
+    fig, ax = plt.subplots(figsize=(10, 5))
 
-top_revistas.sort_values().plot(
-    kind="barh",
-    ax=ax
-)
+    top_revistas.plot(
+        kind="bar",
+        ax=ax
+    )
 
-ax.set_xlabel("Cantidad de publicaciones")
-ax.set_ylabel("Revista")
+    plt.xticks(rotation=45)
 
-st.pyplot(fig)
+    st.pyplot(fig)
+
     # ----------------------------------------------
     # GRÁFICO 5
     # ----------------------------------------------
