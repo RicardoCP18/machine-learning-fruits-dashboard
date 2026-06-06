@@ -26,7 +26,7 @@ layout="wide"
 def cargar_datos():
 
 ```
-url = "AQUI_PEGA_TU_URL_RAW_DE_GITHUB"
+url = "https://raw.githubusercontent.com/RicardoCP18/machine-learning-fruits-dashboard/refs/heads/main/data/scopus_PA3.csv"
 
 return pd.read_csv(url)
 ```
