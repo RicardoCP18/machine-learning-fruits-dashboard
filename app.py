@@ -86,23 +86,29 @@ st.info("""
 
 st.subheader("Filtro de Información")
 
-opciones_anio = ["Todos"] + sorted(
-    df["Year"].dropna().unique().tolist()
-)
+col1, col2 = st.columns([1, 3])
 
-anio_seleccionado = st.selectbox(
-    "Seleccione un año para filtrar el dataset:",
-    opciones_anio
-)
+with col1:
+
+    opciones_anio = ["Todos"] + sorted(
+        df["Year"].dropna().unique().tolist(),
+        reverse=True
+    )
+
+    anio_seleccionado = st.selectbox(
+        "Seleccione un año:",
+        opciones_anio
+    )
 
 if anio_seleccionado == "Todos":
     df_filtrado = df.copy()
 else:
     df_filtrado = df[df["Year"] == anio_seleccionado]
 
-st.write(
-    f"Mostrando {len(df_filtrado)} registros para: **{anio_seleccionado}**"
-)
+with col2:
+    st.info(
+        f"Mostrando {len(df_filtrado)} registros para: {anio_seleccionado}"
+    )
 
 # ==================================================
 # TABS
