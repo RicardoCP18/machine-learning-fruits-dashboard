@@ -50,6 +50,7 @@ st.sidebar.markdown("""
 ### Grupo 6:
 
 Ricardo Cesspedes
+
 Luis Beltran
 """)
 
